@@ -1,30 +1,25 @@
-# Импортируем необходимые классы.
 import logging
-from telegram.ext import Application, MessageHandler, filters, CommandHandler
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram.ext import Application, MessageHandler, filters, CommandHandler, ConversationHandler
+from telegram import ReplyKeyboardRemove
 import os
 from dotenv import load_dotenv
-
+from Markups import get_markup
+import sqlite3
 load_dotenv()
-BOT_TOKEN = os.getenv('BOT_TOKEN')
+
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
-reply_keyboard = [['/set', '/help'],
-                  ['/unset', '/close']]
-markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False)
 
 
 async def start(update, context):
     user = update.effective_user
     await update.message.reply_html(
         rf"Привет {user.mention_html()}! Я бот Гриши. Я почти полностью скопирован с учебника Яндекс Лицея!",
-        reply_markup=markup)
+        reply_markup=get_markup())
 
 
 async def help_command(update, context):
-    await update.message.reply_text(
-        "Я бот с задачами по таймеру.")
+    await update.message.reply_text("Я бот с задачами по таймеру.")
 
 
 TIMER = 5  # таймер на 5 секунд
@@ -67,7 +62,7 @@ async def unset(update, context):
 
 
 def main():
-    application = Application.builder().token(BOT_TOKEN).build()
+    application = Application.builder().token(os.getenv('BOT_TOKEN')).build()
 
     application.add_handler(CommandHandler('set', set_timer))
     application.add_handler(CommandHandler("unset", unset))
