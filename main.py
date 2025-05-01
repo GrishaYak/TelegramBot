@@ -23,9 +23,9 @@ async def start(update, context):
 
 
 async def first_response(update, context):
-    locality = update.message.text
+    context.user_data['locality'] = update.message.text
     await update.message.reply_text(
-        f"Какая погода в городе {locality}?")
+        f"Какая погода в городе {context.user_data['locality']}?")
     return 2
 
 
@@ -38,7 +38,7 @@ async def second_response(update, context):
 
 async def bye(update, context):
     logger.info(update.message.text)
-    await update.message.reply_text("Всего доброго!")
+    await update.message.reply_text(f"Всего доброго, {context.user_data['locality']}!")
 
 
 async def stop(update, context):
