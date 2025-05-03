@@ -1,0 +1,10 @@
+class TooBig(Exception):
+    pass
+
+
+class IsNegative(Exception):
+    pass
+
+
+class LenError(Exception):
+    pass

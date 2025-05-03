@@ -12,11 +12,11 @@ create table Categories(
 
 create table Alterations(
     id serial primary key,
-    user_id varchar(32),
-    category_id int,
-    summa int,
+    user_id varchar(32) not null,
+    category_id int not null,
+    summa int not null,
     description varchar(255),
-    date date,
+    date date not null,
     foreign key (user_id) references Users(tg_username) on delete cascade,
     foreign key (category_id) references Categories(id) on delete cascade
 )
