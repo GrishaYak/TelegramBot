@@ -4,6 +4,8 @@ from markups import get_markup
 
 
 async def start(update, context):
+    """Это начало диалога с пользователем. Если его нет в базе данных, то он будет туда занесён и при этом он получит
+     сообщение-приветствие. После выполнения этой функции, пользователю становятся доступны все нужные команды"""
     user = update.effective_user
     context.user_data.clear()
     exists = await db.add_user_if_not_exists(user.username)
@@ -14,10 +16,13 @@ async def start(update, context):
 
 
 async def help_command(update, context):
+    """Эта функция просто выводит пользователю небольшую инструкцию по использованию бота."""
     await update.message.reply_text(HELP_TXT, reply_markup=get_markup(8))
 
 
 async def escape(update, context):
+    """Эта функция может быть вызвана в любой момент во время диалога, и она выводит пользователя из этого диалога
+     в момент до написания команды start"""
     await update.message.reply_text('Вы вернулись назад. Можете написать "/start", чтобы начать,'
                                     ' или "/help", если не знаете что делать', reply_markup=get_markup(3))
     return -1

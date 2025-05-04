@@ -7,8 +7,9 @@ from handlers import *
 
 
 def main():
+    """Это главная функция, она включает бота и добавляет ему обработчики сообщений, взятые из файла handlers"""
     application = Application.builder().token(os.getenv('BOT_TOKEN')).build()
-
+    # Выше я взял токен бота из окружения, которое загрузил ранее
     start_conv = ConversationHandler(
         entry_points=[start_handler],
         states={
@@ -33,7 +34,7 @@ def main():
 
 
 if __name__ == '__main__':
-    load_dotenv()
+    load_dotenv()  # Загружаем окружение.
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG,
                         filename='../logs.txt')
     logger = logging.getLogger(__name__)

@@ -1,5 +1,8 @@
+
+-- Здесь написаны запросы на создания всех необходимых таблиц.
+
 create table Users(
-    tg_username varchar(32) primary key
+    tg_username varchar(32) primary key --varchar(X) - это строка, длина которой не больше X символов
 )
 
 create table Categories(

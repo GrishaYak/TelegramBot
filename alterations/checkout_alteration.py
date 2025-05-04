@@ -5,12 +5,14 @@ import datetime
 from db import db
 
 
-async def checkout_alteration(update, context):
+async def checkout_alteration_question(update, context):
+    """Спрашивает какие записи интересут пользователя."""
     await update.message.reply_text(CHECKOUT_TEXT, reply_markup=get_markup(5))
     return 'checkout_alteration'
 
 
 async def parse_dates(update, text):
+    """Проверяет корректность введёных дат/введёной даты"""
     try:
         dates = text.split()
         if len(dates) > 2:
@@ -28,17 +30,51 @@ async def parse_dates(update, text):
     return dates
 
 
-def add_alterations_to_user_data(res, context):
-    for i in range(len(res)):
-        res[i] = res[i][0]
+async def checkout_alteration(update, context):
+    f"""Читает из сообщения дат(у/ы)/'{ALL_DATES}' - ключевое слово, обозначающее, что пользователь хочет получить все
+     свои записи. Проверяет корректность дат, если нужно, функцией parse_dates.
+     
+    Предлагает пользователю посмотреть записи за другие даты или удалить даты из данного ему списка"""
+    text = update.message.text
+    username = update.effective_user.username
+
+    if text == ALL_DATES:
+        return await show_all_alterations(update, context)
+
+    dates = await parse_dates(update, text)
+    if isinstance(dates, str):
+        return dates
+
+    alterations = add_alterations_to_user_data(await db.get_alterations_by_date(dates, username), context)
+
+    text = await rows_to_text(update, alterations)
+
+    await update.message.reply_text(text)
+    await update.message.reply_text("Вы можете ввести даты снова, или удалить какие-то из записей.",
+                                    reply_markup=get_markup(6))
+    return 'checkout_alteration_done'
+
+
+def add_alterations_to_user_data(alterations, context):
+    """Сохраняет id изменений в данные пользователя, возвращает те же изменения, но убирает у каждого изменения
+     id изменения в начале"""
+    for i in range(len(alterations)):
+        alterations[i] = alterations[i][0]
     context.user_data['alts'] = {}
-    for i in range(len(res)):
-        context.user_data['alts'][i + 1] = res[i][0]
-        res[i] = res[i][1:]
-    return res
+    for i in range(len(alterations)):
+        context.user_data['alts'][i + 1] = alterations[i][0]
+        alterations[i] = alterations[i][1:]
+    return alterations
 
 
 async def rows_to_text(update, alterations):
+    """Переводит изменения, записанные в двумерный массив в текс, который будет отправлен пользователю.
+    В массиве alterations нужно хранить следующие данные в следующем порядке:
+    сумма изменения;
+    id категории изменения;
+    описание изменения;
+    дата изменения.
+    """
     text = ''
     for i in range(len(alterations)):
         alt = list(alterations[i])
@@ -64,28 +100,10 @@ async def rows_to_text(update, alterations):
     return text
 
 
-async def checkout_alteration2(update, context):
-    text = update.message.text
-    username = update.effective_user.username
-
-    if text == ALL_DATES:
-        return await show_all_alterations(update, context)
-
-    dates = await parse_dates(update, text)
-    if isinstance(dates, str):
-        return dates
-
-    alterations = add_alterations_to_user_data(await db.get_alterations_by_date(dates, username), context)
-
-    text = await rows_to_text(update, alterations)
-
-    await update.message.reply_text(text)
-    await update.message.reply_text("Вы можете ввести даты снова, или удалить какие-то из записей.",
-                                    reply_markup=get_markup(6))
-    return 'checkout_alteration_done'
-
-
 async def show_all_alterations(update, context):
+    """Показывает пользователю все его записи.
+
+    Предлагает пользователю посмотреть записи за другие даты или удалить даты из данного ему списка"""
     username = update.effective_user.username
     res = add_alterations_to_user_data(await db.get_all_alterations(username), context)
 

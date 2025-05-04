@@ -1,7 +1,11 @@
-from db.db_connection import get_connection
+from db_connection import get_connection
+
+# В этом файле содержатся все функции с запросами в базу данных
 
 
 async def get_alterations_by_date(dates, username):
+    """Возвращает изменения, сделанные данным пользователем в данную дату,
+    или в промежутке между двумя данными датами"""
     connection = await get_connection()
     async with connection.cursor() as cursor:
         if len(dates) == 1:
@@ -14,6 +18,7 @@ async def get_alterations_by_date(dates, username):
 
 
 async def get_all_alterations(username):
+    """Возвращает все изменения, сделанные данным пользователем"""
     connection = await get_connection()
     async with connection.cursor() as cursor:
         await cursor.execute("SELECT (id, summa, category_id, description, date) FROM alterations "
@@ -22,6 +27,7 @@ async def get_all_alterations(username):
 
 
 async def get_category_name_by_id(i):
+    """Возвращает название категории с данным id"""
     connection = await get_connection()
     async with connection.cursor() as cursor:
         await cursor.execute("SELECT name FROM categories WHERE id=%s", [i])
@@ -29,6 +35,7 @@ async def get_category_name_by_id(i):
 
 
 async def del_alterations_by_ids(ids):
+    """Удаляет изменения с данными id"""
     connection = await get_connection()
     async with connection.cursor() as cursor:
         if len(ids) > 1:
@@ -39,6 +46,7 @@ async def del_alterations_by_ids(ids):
 
 
 async def del_user(username):
+    """Удаляет пользователя с данным именем пользователя"""
     connection = await get_connection()
     async with connection.cursor() as cursor:
         await cursor.execute("DELETE FROM users WHERE tg_username=%s", [username])
@@ -46,6 +54,7 @@ async def del_user(username):
 
 
 async def get_categories_by_username(username):
+    """Возвращает все категории, созданные данным пользователям"""
     connection = await get_connection()
     async with connection.cursor() as cursor:
         await cursor.execute("SELECT (name) FROM categories WHERE user_id=%s", [username])
@@ -53,6 +62,7 @@ async def get_categories_by_username(username):
 
 
 async def get_category_id(username, category_name):
+    """Возвращает id категории с данным названием, созданной данным пользователем"""
     connection = await get_connection()
     async with connection.cursor() as cursor:
         await cursor.execute("SELECT id FROM categories WHERE name=%s AND user_id=%s", [category_name, username])
@@ -65,21 +75,30 @@ async def get_category_id(username, category_name):
 
 
 async def add_category(category_name, username):
+    """Создаёт категорию с данным названием за данным пользователем"""
     connection = await get_connection()
     async with connection.cursor() as cursor:
         await cursor.execute("INSERT INTO categories (name, user_id) VALUES (%s, %s)", [category_name, username])
         await connection.commit()
 
 
-async def add_alteration(*row):
+async def add_alteration(user_id, category_id, summa, description, date):
+    """Добавляет изменение. На вход нужны:
+    никнейм пользователя;
+    id категории, к которой принадлежит изменение;
+    сумма, на которую сделано изменение;
+    описание изменения, может быть как строка, так и None;
+    дата совершения изменения."""
     connection = await get_connection()
     async with connection.cursor() as cursor:
         await cursor.execute(f"INSERT INTO alterations (user_id, category_id, summa, description, date) "
-                             f"VALUES (%s, %s, %s, %s, %s)", row)
+                             f"VALUES (%s, %s, %s, %s, %s)", [user_id, category_id, summa, description, date])
         await connection.commit()
 
 
 async def get_user(username):
+    """Возвращает ник пользователя с данным ником пользователя.
+    На первый взгляд бесполезно, но на деле эта функция нужна для проверки принадлежности пользователя к базе данных."""
     connection = await get_connection()
     async with connection.cursor() as cursor:
         await cursor.execute("SELECT * FROM users WHERE tg_username=%s", [username])
@@ -87,6 +106,7 @@ async def get_user(username):
 
 
 async def add_user_if_not_exists(username):
+    """Добавляет пользователя в базу данных. Если он уже там был, возвращает True, иначе - False"""
     connection = await get_connection()
     async with connection.cursor() as cursor:
         user = await get_user(username)
@@ -98,6 +118,7 @@ async def add_user_if_not_exists(username):
 
 
 async def del_categories_by_ids(ids):
+    """Удаляет категории с данными id"""
     connection = await get_connection()
     async with connection.cursor() as cursor:
         if len(ids) > 1:

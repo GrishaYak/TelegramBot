@@ -1,6 +1,6 @@
 from db import db
 from general.markups import get_markup
-from general.usefull_functions import process_numbers
+from general.helpful_functions import process_numbers
 
 
 async def delete_alteration(update, context):
