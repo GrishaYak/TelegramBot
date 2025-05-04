@@ -1,11 +1,11 @@
-from constants import CHECKOUT_TEXT, CHECKOUT_ALTERATION, CHECKOUT_ALTERATION_WOUT_DESCRIPTION, ALL_TIME
+from constants import CHECKOUT_TEXT, CHECKOUT_ALTERATION, CHECKOUT_ALTERATION_WOUT_DESCRIPTION, ALL_DATES
 from Markups import get_markup
 from Errors import TooManyWords
 import datetime
 from db import db
 
 
-async def checkout(update, context):
+async def checkout_alteration(update, context):
     await update.message.reply_text(CHECKOUT_TEXT, reply_markup=get_markup(5))
     return 'checkout'
 
@@ -28,7 +28,8 @@ async def parse_dates(update, text):
     return dates
 
 
-def process_res(res, context):
+def add_alterations_to_user_data(res, context):
+
     for i in range(len(res)):
         res[i] = res[i][0]
     context.user_data['alts'] = {}
@@ -38,7 +39,7 @@ def process_res(res, context):
     return res
 
 
-async def reply_with_alterations(update, alterations):
+async def rows_to_text(update, alterations):
     text = ''
     for i in range(len(alterations)):
         alt = list(alterations[i])
@@ -64,20 +65,20 @@ async def reply_with_alterations(update, alterations):
     return text
 
 
-async def checkout2(update, context):
+async def checkout_alteration2(update, context):
     text = update.message.text
     username = update.effective_user.username
 
-    if text == ALL_TIME:
+    if text == ALL_DATES:
         return await show_all_alterations(update, context)
 
     dates = await parse_dates(update, text)
     if isinstance(dates, str):
         return dates
 
-    res = process_res(await db.get_alts(dates, username), context)
+    alterations = add_alterations_to_user_data(await db.get_alterations_by_date(dates, username), context)
 
-    text = await reply_with_alterations(update, res)
+    text = await rows_to_text(update, alterations)
 
     await update.message.reply_text(text)
     await update.message.reply_text("Вы можете ввести даты снова, или удалить какие-то из записей.",
@@ -87,9 +88,9 @@ async def checkout2(update, context):
 
 async def show_all_alterations(update, context):
     username = update.effective_user.username
-    res = process_res(await db.get_all_alts(username), context)
+    res = add_alterations_to_user_data(await db.get_all_alterations(username), context)
 
-    text = await reply_with_alterations(update, res)
+    text = await rows_to_text(update, res)
     await update.message.reply_text(text)
     await update.message.reply_text("Вы можете ввести даты снова, или удалить какие-то из записей.",
                                     reply_markup=get_markup(6))

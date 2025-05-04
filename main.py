@@ -6,29 +6,24 @@ import asyncio
 from constants import *
 from alterations import *
 from delete_alterations import delete_alteration, delete_alteration2
-from checkout import checkout, checkout2
+from checkout_alteration import checkout_alteration, checkout_alteration2
+from delete_user import delete_user, delete_user2
+from checkout_categories import checkout_categories
+from delete_categories import delete_categories_which, delete_categories
 
 
 async def start(update, context):
-    connection = await get_connection()
     user = update.effective_user
     context.user_data.clear()
-    async with connection.cursor() as cursor:
-        await cursor.execute("SELECT * FROM users WHERE tg_username=%s", [user.username])
-        if not await cursor.fetchall():
-            await update.message.reply_html(GREETINGS.format(nick=user.mention_html()))
-            await cursor.execute(f"INSERT INTO users VALUES (%s);", [user.username])
-            await connection.commit()
-        await update.message.reply_text("Что хотите сделать?", reply_markup=get_markup(1))
-        return 1
+    exists = await db.add_user_if_not_exists(user.username)
+    if not exists:
+        await update.message.reply_html(GREETINGS.format(nick=user.mention_html()))
+    await update.message.reply_text("Что хотите сделать?", reply_markup=get_markup(1))
+    return 1
 
 
 async def help_command(update, context):
     await update.message.reply_text(HELP_TXT)
-
-
-async def delete_account(update, context):
-    pass
 
 
 async def escape(update, context):
@@ -41,27 +36,43 @@ def main():
     application = Application.builder().token(os.getenv('BOT_TOKEN')).build()
 
     start_handler = CommandHandler("start", start)
+
     escape_handler = CommandHandler("escape", escape)
+
+    checkout_alteration_handler = CommandHandler("checkout", checkout_alteration)
+    checkout_alteration_handler2 = MessageHandler(filters.TEXT & ~filters.COMMAND, checkout_alteration2)
+
+    delete_user_handler = CommandHandler("delete_me", delete_user)
+    delete_user_handler2 = MessageHandler(filters.TEXT & ~filters.COMMAND, delete_user2)
+
     consumption_handler = CommandHandler("consumption", add_consumption)
     income_handler = CommandHandler("income", add_income)
-    checkout_handler = CommandHandler("checkout", checkout)
-    checkout_handler2 = MessageHandler(filters.TEXT & ~filters.COMMAND, checkout2)
-    delete_account_handler = CommandHandler("delete_me", delete_account)
     alteration_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, add_alteration)
     alteration_handler2 = MessageHandler(filters.TEXT & ~filters.COMMAND, add_alteration2)
     alteration_handler_final = MessageHandler(filters.TEXT & ~filters.COMMAND, add_alteration_final)
-    delete_handler = CommandHandler("delete", delete_alteration)
-    delete_handler2 = MessageHandler(filters.TEXT & ~filters.COMMAND, delete_alteration2)
+
+    delete_alterations_handler = CommandHandler("delete", delete_alteration)
+    delete_alterations_handler2 = MessageHandler(filters.TEXT & ~filters.COMMAND, delete_alteration2)
+
+    checkout_categories_handler = CommandHandler('checkout_categories', checkout_categories)
+
+    delete_categories_which_handler = CommandHandler('delete_categories', delete_categories_which)
+    delete_categories_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, delete_categories)
+
     start_conv = ConversationHandler(
         entry_points=[start_handler],
         states={
-            1: [consumption_handler, income_handler, checkout_handler, delete_account_handler],
-            'alteration1': [alteration_handler],
-            'alteration2': [alteration_handler2],
-            'alteration3': [alteration_handler_final],
-            'checkout': [checkout_handler2],
-            'checkout_done': [checkout_handler2, delete_handler],
-            'delete_alteration': [delete_handler2]
+            1: [consumption_handler, income_handler, checkout_alteration_handler, delete_user_handler,
+                checkout_categories_handler],
+            'add_alteration': [alteration_handler],
+            'add_alteration2': [alteration_handler2],
+            'add_alteration3': [alteration_handler_final],
+            'checkout': [checkout_alteration_handler2],
+            'checkout_done': [checkout_alteration_handler2, delete_alterations_handler],
+            'delete_alteration': [delete_alterations_handler2],
+            'are_you_sure': [delete_user_handler2],
+            'delete_categories_which': [delete_categories_which_handler],
+            'delete_categories': [delete_categories_handler]
         },
         fallbacks=[escape_handler]
     )

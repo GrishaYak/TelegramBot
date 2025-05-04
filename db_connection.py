@@ -1,6 +1,5 @@
 import psycopg
 
-
 CONNECTION = None
 
 
