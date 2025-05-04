@@ -1,4 +1,4 @@
-from db_connection import get_connection
+from db.db_connection import get_connection
 
 
 async def get_alterations_by_date(dates, username):
@@ -58,16 +58,16 @@ async def get_category_id(username, category_name):
         await cursor.execute("SELECT id FROM categories WHERE name=%s AND user_id=%s", [category_name, username])
         category_id = await cursor.fetchone()
         if category_id is None or not category_id:
-            await add_category(username, category_name)
+            await add_category(category_name, username)
         await cursor.execute("SELECT id FROM categories WHERE name=%s AND user_id=%s", [category_name, username])
         category_id = await cursor.fetchone()
     return category_id
 
 
-async def add_category(*row):
+async def add_category(category_name, username):
     connection = await get_connection()
     async with connection.cursor() as cursor:
-        await cursor.execute("INSERT INTO categories (name, user_id) VALUES (%s, %s)", row)
+        await cursor.execute("INSERT INTO categories (name, user_id) VALUES (%s, %s)", [category_name, username])
         await connection.commit()
 
 

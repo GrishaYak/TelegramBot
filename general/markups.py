@@ -7,13 +7,13 @@ def get_markup(preset=1):
     keyboard = [[]]
     match preset:
         case 1:
-            keyboard = [['/delete_me', '/income'],
-                        ['/checkout_alterations', '/consumption'],
+            keyboard = [['/delete_me', '/add_income'],
+                        ['/checkout_alterations', '/add_consumption'],
                         ['/checkout_categories', '/help']]
         case 2:
             keyboard = [[EMPTY_DESCRIPTION]]
         case 3:
-            keyboard = [['/start', '/help']]
+            keyboard = [['/start']]
         case 4:
             keyboard = [['/escape']]
         case 5:
@@ -25,6 +25,10 @@ def get_markup(preset=1):
         case 7:
             keyboard = [['/delete_categories'],
                         ['/escape']]
+        case 8:
+            keyboard = [['/delete_me', '/add_income'],
+                        ['/checkout_alterations', '/add_consumption'],
+                        ['/checkout_categories']]
     return ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
 
 

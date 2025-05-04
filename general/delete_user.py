@@ -1,11 +1,11 @@
-from constants import ARE_YOU_SURE, KEY_WORD, ARE_NOT_SURE
-from Markups import get_markup
+from general.constants import ARE_YOU_SURE, KEY_WORD, ARE_NOT_SURE
+from general.markups import get_markup
 from db import db
 
 
 async def delete_user(update, context):
     await update.message.reply_text(ARE_YOU_SURE, reply_markup=get_markup(4))
-    return 'are_you_sure'
+    return 'delete_user'
 
 
 async def delete_user2(update, context):

@@ -1,10 +1,9 @@
-from Errors import TooBig, IsNegative, LenError
-from constants import EMPTY_DESCRIPTION
-from usefull_functions import sep_by_three
+from general.errors import TooBig, IsNegative, LenError
+from general.constants import EMPTY_DESCRIPTION
+from general.usefull_functions import sep_by_three
 from datetime import date
-from Markups import get_markup
+from general.markups import get_markup
 from telegram import ReplyKeyboardMarkup
-from telegram.ext import ConversationHandler
 from db import db
 
 
@@ -12,14 +11,14 @@ async def add_consumption(update, context):
     await update.message.reply_text("Введите сумму расхода в рублях", reply_markup=get_markup(4))
     context.user_data['sign'] = -1
     context.user_data['type'] = 'расход'
-    return 'add_alteration'
+    return 'add_alteration_sum'
 
 
 async def add_income(update, context):
     await update.message.reply_text("Введите сумму дохода в рублях", reply_markup=get_markup(4))
     context.user_data['sign'] = 1
     context.user_data['type'] = "доход"
-    return 'add_alteration'
+    return 'add_alteration_sum'
 
 
 async def process_sum(update, context):
@@ -31,17 +30,17 @@ async def process_sum(update, context):
             raise IsNegative
     except TooBig:
         await update.message.reply_text("Пожалуйста, введите число поменьше!", reply_markup=get_markup(4))
-        return 'add_alteration'
+        return 'add_alteration_sum'
     except IsNegative:
         await update.message.reply_text("Пожалуйста, введите положительное число!", reply_markup=get_markup(4))
-        return 'add_alteration'
+        return 'add_alteration_sum'
     except ValueError:
         await update.message.reply_text("Пожалуйста, введите только число!", reply_markup=get_markup(4))
-        return 'add_alteration'
+        return 'add_alteration_sum'
 
 
-async def add_alteration(update, context):
-    res = process_sum(update, context)
+async def add_alteration_sum(update, context):
+    res = await process_sum(update, context)
     if res is not None:
         return res
     context.user_data['sum'] *= context.user_data['sign']
@@ -49,15 +48,14 @@ async def add_alteration(update, context):
 
     keyboard = await db.get_categories_by_username(username)
     keyboard = [el[0] for el in keyboard]
-    keyboard.append('/escape')
 
-    markup = ReplyKeyboardMarkup(sep_by_three(keyboard))
-    if len(keyboard) > 1:
+    markup = ReplyKeyboardMarkup(sep_by_three(keyboard) + [['/escape']])
+    if len(keyboard):
         await update.message.reply_text(f"Выберите категорию {context.user_data['type']}а. Вы можете нажать на одну из "
                                         f"тех, что вы уже создали, или просто написать новую", reply_markup=markup)
     else:
         await update.message.reply_text("К какой категории отнести это изменение?", reply_markup=markup)
-    return 'add_alteration2'
+    return 'add_alteration_category'
 
 
 async def process_category(update):
@@ -68,10 +66,10 @@ async def process_category(update):
         return True, category_name
     except LenError:
         await update.message.reply_text("Название категории должно содержать не более 32 символов!")
-        return False, 'add_alteration2'
+        return False, 'add_alteration_category'
 
 
-async def add_alteration2(update, context):
+async def add_alteration_category(update, context):
     ok, category_name = await process_category(update)
     if not ok:
         return category_name
@@ -84,7 +82,7 @@ async def add_alteration2(update, context):
     await update.message.reply_text(f'Напишите краткое описание этого {context.user_data["type"]}а, или нажмите '
                                     f'кнопку "Оставить пустым", чтобы не добавлять описание',
                                     reply_markup=get_markup(2))
-    return 'add_alteration3'
+    return 'add_alteration_description'
 
 
 async def process_description(update):
@@ -95,10 +93,10 @@ async def process_description(update):
         return True, description
     except LenError:
         await update.message.reply_text("Описание должно содержать не более 255 символов!", reply_markup=get_markup(2))
-        return False, 'add_alteration3'
+        return False, 'add_alteration_description'
 
 
-async def add_alteration_final(update, context):
+async def add_alteration_description(update, context):
     ok, description = await process_description(update)
 
     if not ok:

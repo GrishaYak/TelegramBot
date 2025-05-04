@@ -1,6 +1,6 @@
 from db import db
-from Markups import get_markup
-from usefull_functions import process_numbers
+from general.markups import get_markup
+from general.usefull_functions import process_numbers
 
 
 async def delete_categories_which(update, context):

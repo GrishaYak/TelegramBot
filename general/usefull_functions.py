@@ -1,4 +1,4 @@
-from Errors import NotInList
+from general.errors import NotInList
 
 
 def sep_by_three(arr: list) -> list:

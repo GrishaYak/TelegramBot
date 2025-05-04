@@ -1,13 +1,13 @@
-from constants import CHECKOUT_TEXT, CHECKOUT_ALTERATION, CHECKOUT_ALTERATION_WOUT_DESCRIPTION, ALL_DATES
-from Markups import get_markup
-from Errors import TooManyWords
+from general.constants import CHECKOUT_TEXT, CHECKOUT_ALTERATION, CHECKOUT_ALTERATION_WOUT_DESCRIPTION, ALL_DATES
+from general.markups import get_markup
+from general.errors import TooManyWords
 import datetime
 from db import db
 
 
 async def checkout_alteration(update, context):
     await update.message.reply_text(CHECKOUT_TEXT, reply_markup=get_markup(5))
-    return 'checkout'
+    return 'checkout_alteration'
 
 
 async def parse_dates(update, text):
@@ -21,15 +21,14 @@ async def parse_dates(update, text):
         dates = [datetime.date(*[int(el) for el in dat[::-1]]) for dat in dates]
     except TooManyWords:
         await update.message.reply_text("Нужно написать не более двух дат!")
-        return 'checkout'
+        return 'checkout_alteration'
     except Exception:
         await update.message.reply_text("Неправильный формат!")
-        return 'checkout'
+        return 'checkout_alteration'
     return dates
 
 
 def add_alterations_to_user_data(res, context):
-
     for i in range(len(res)):
         res[i] = res[i][0]
     context.user_data['alts'] = {}
@@ -83,7 +82,7 @@ async def checkout_alteration2(update, context):
     await update.message.reply_text(text)
     await update.message.reply_text("Вы можете ввести даты снова, или удалить какие-то из записей.",
                                     reply_markup=get_markup(6))
-    return 'checkout_done'
+    return 'checkout_alteration_done'
 
 
 async def show_all_alterations(update, context):
@@ -94,5 +93,5 @@ async def show_all_alterations(update, context):
     await update.message.reply_text(text)
     await update.message.reply_text("Вы можете ввести даты снова, или удалить какие-то из записей.",
                                     reply_markup=get_markup(6))
-    return 'checkout_done'
+    return 'checkout_alteration_done'
 
