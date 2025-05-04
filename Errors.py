@@ -8,3 +8,11 @@ class IsNegative(Exception):
 
 class LenError(Exception):
     pass
+
+
+class TooManyWords(Exception):
+    pass
+
+
+class NotInList(Exception):
+    pass

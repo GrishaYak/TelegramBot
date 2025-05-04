@@ -9,17 +9,17 @@ from telegram.ext import ConversationHandler
 
 
 async def add_consumption(update, context):
-    await update.message.reply_text("Введите сумму расхода")
+    await update.message.reply_text("Введите сумму расхода в рублях", reply_markup=get_markup(4))
     context.user_data['sign'] = -1
     context.user_data['type'] = 'расход'
-    return 2
+    return 'alteration1'
 
 
 async def add_income(update, context):
-    await update.message.reply_text("Введите сумму дохода", reply_markup=None)
+    await update.message.reply_text("Введите сумму дохода в рублях", reply_markup=get_markup(4))
     context.user_data['sign'] = 1
     context.user_data['type'] = "доход"
-    return 2
+    return 'alteration1'
 
 
 async def add_alteration(update, context):
@@ -30,24 +30,25 @@ async def add_alteration(update, context):
         if context.user_data['sum'] < 0:
             raise IsNegative
     except TooBig:
-        await update.message.reply_text("Пожалуйста, введите число поменьше!")
-        return 2
+        await update.message.reply_text("Пожалуйста, введите число поменьше!", reply_markup=get_markup(4))
+        return 'alteration1'
     except IsNegative:
-        await update.message.reply_text("Пожалуйста, введите положительное число!")
-        return 2
+        await update.message.reply_text("Пожалуйста, введите положительное число!", reply_markup=get_markup(4))
+        return 'alteration1'
     except ValueError:
-        await update.message.reply_text("Пожалуйста, введите только число!")
-        return 2
+        await update.message.reply_text("Пожалуйста, введите только число!", reply_markup=get_markup(4))
+        return 'alteration1'
     context.user_data['sum'] *= context.user_data['sign']
     username = update.effective_user.username
     categories = await get_categories(username)
-    if categories:
-        markup = ReplyKeyboardMarkup(sep_by_three(categories))
+    categories.append('/escape')
+    markup = ReplyKeyboardMarkup(sep_by_three(categories))
+    if len(categories) > 1:
         await update.message.reply_text(f"Выберите категорию {context.user_data['type']}а. Вы можете нажать на одну из "
                                         f"тех, что вы уже создали, или просто написать новую", reply_markup=markup)
     else:
-        await update.message.reply_text("К какой категории отнести это изменение?")
-    return 3
+        await update.message.reply_text("К какой категории отнести это изменение?", reply_markup=markup)
+    return 'alteration2'
 
 
 async def add_alteration2(update, context):
@@ -57,23 +58,24 @@ async def add_alteration2(update, context):
             raise LenError
     except LenError:
         await update.message.reply_text("Название категории должно содержать не более 32 символов!")
-        return 3
+        return 'alteration2'
+    category_name = category_name.replace("'", '`')
     username = update.effective_user.username
     connection = await get_connection()
     async with connection.cursor() as cursor:
-        await cursor.execute(f"SELECT id FROM categories WHERE name='{category_name}' AND user_id='{username}'")
+        await cursor.execute("SELECT id FROM categories WHERE name=%s AND user_id=%s", [category_name, username])
         category_id = await cursor.fetchone()
         if category_id is None:
-            await cursor.execute(f"INSERT INTO categories (name, user_id) VALUES {(category_name, username)}")
+            await cursor.execute("INSERT INTO categories (name, user_id) VALUES (%s, %s)", [category_name, username])
             await connection.commit()
-        await cursor.execute(f"SELECT id FROM categories WHERE name='{category_name}' AND user_id='{username}'")
+        await cursor.execute("SELECT id FROM categories WHERE name=%s AND user_id=%s", [category_name, username])
         category_id = await cursor.fetchone()
         context.user_data['category_id'] = category_id[0]
 
         await update.message.reply_text(f'Напишите краткое описание этого {context.user_data["type"]}а, или нажмите '
                                         f'кнопку "Оставить пустым", чтобы не добавлять описание',
                                         reply_markup=get_markup(2))
-    return 4
+    return 'alteration3'
 
 
 async def add_alteration_final(update, context):
@@ -82,8 +84,8 @@ async def add_alteration_final(update, context):
         if len(description) > 255:
             raise LenError
     except LenError:
-        await update.message.reply_text("Описание должно содержать не более 255 символов!")
-        return 3
+        await update.message.reply_text("Описание должно содержать не более 255 символов!", reply_markup=get_markup(2))
+        return 'alteration3'
     if description == MT_DISCRIPTION:
         description = None
     else:
@@ -95,12 +97,12 @@ async def add_alteration_final(update, context):
         await cursor.execute(f"INSERT INTO alterations (user_id, category_id, summa, description, date) "
                              f"VALUES (%s, %s, %s, %s, %s)", row)
         await connection.commit()
-        await update.message.reply_text("Записали!")
-    return ConversationHandler.END
+        await update.message.reply_text("Записали!", reply_markup=get_markup(1))
+    return 1
 
 
 async def get_categories(username):
     connection = await get_connection()
     async with connection.cursor() as cursor:
-        await cursor.execute(f"SELECT name FROM categories WHERE user_id='{username}'")
+        await cursor.execute("SELECT name FROM categories WHERE user_id=%s", [username])
         return [x[0] for x in await cursor.fetchall()]

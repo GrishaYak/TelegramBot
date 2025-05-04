@@ -4,7 +4,7 @@ import psycopg
 CONNECTION = None
 
 
-async def connect_to_db():
+async def connect_to_db() -> psycopg.AsyncConnection:
     return await psycopg.AsyncConnection.connect("dbname=FinancesBot user=postgres password=123")
 
 
