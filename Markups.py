@@ -6,7 +6,7 @@ def get_markup(preset=1):
     keyboard = [[]]
     match preset:
         case 1:
-            keyboard = [['/consumption', '/income'], ['/checkout', '/delete_me']]
+            keyboard = [['/consumption', '/income'], ['/checkout', '/delete_me'], ['/edit', '/help']]
         case 2:
             keyboard = [[MT_DISCRIPTION]]
         case 3:
