@@ -14,7 +14,7 @@ def get_markup(preset=1):
                         ['/checkout_alterations', '/add_consumption'],
                         ['/checkout_categories', '/help']]
         case 2:
-            keyboard = [[EMPTY_DESCRIPTION]]
+            keyboard = [[EMPTY_DESCRIPTION], ['/escape']]
         case 3:
             keyboard = [['/start']]
         case 4:
