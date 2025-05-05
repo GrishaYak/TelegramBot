@@ -1,4 +1,4 @@
-from db_connection import get_connection
+from .db_connection import get_connection
 
 # В этом файле содержатся все функции с запросами в базу данных
 

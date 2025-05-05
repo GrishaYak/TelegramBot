@@ -33,7 +33,8 @@ async def parse_dates(update, text):
 async def checkout_alteration(update, context):
     f"""Читает из сообщения дат(у/ы)/'{ALL_DATES}' - ключевое слово, обозначающее, что пользователь хочет получить все
      свои записи. Проверяет корректность дат, если нужно, функцией parse_dates.
-     
+    Выводит пользователю все его записи за нужный промежуток времени, создаёт словарь в user_data в котором по ключу 
+    порядкового номера изменений хранятся id этих изменений
     Предлагает пользователю посмотреть записи за другие даты или удалить даты из данного ему списка"""
     text = update.message.text
     username = update.effective_user.username
@@ -102,7 +103,7 @@ async def rows_to_text(update, alterations):
 
 async def show_all_alterations(update, context):
     """Показывает пользователю все его записи.
-
+    Создаёт словарь в user_data в котором по ключу порядкового номера изменений хранятся id этих изменений.
     Предлагает пользователю посмотреть записи за другие даты или удалить даты из данного ему списка"""
     username = update.effective_user.username
     res = add_alterations_to_user_data(await db.get_all_alterations(username), context)

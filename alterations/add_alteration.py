@@ -34,7 +34,7 @@ async def process_sum(update, context):
         context.user_data['sum'] = int(update.message.text)
         if context.user_data['sum'] >= (1 << 31):
             raise TooBig
-        if context.user_data['sum'] < 0:
+        if context.user_data['sum'] <= 0:
             raise IsNegative
     except TooBig:
         await update.message.reply_text("Пожалуйста, введите число поменьше!", reply_markup=get_markup(4))

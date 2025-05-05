@@ -23,6 +23,5 @@ async def help_command(update, context):
 async def escape(update, context):
     """Эта функция может быть вызвана в любой момент во время диалога, и она выводит пользователя из этого диалога
      в момент до написания команды start"""
-    await update.message.reply_text('Вы вернулись назад. Можете написать "/start", чтобы начать,'
-                                    ' или "/help", если не знаете что делать', reply_markup=get_markup(3))
+    await update.message.reply_text('Вы вернулись назад. Напишите "/start", чтобы начать,', reply_markup=get_markup(3))
     return -1

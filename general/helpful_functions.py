@@ -23,7 +23,6 @@ async def process_numbers(numbers: str, dicti: dict, update):
     Возвращает False и неполный массив в качестве ответа, елси данные были даны в некоректном формате, при этом
     выводит сообщение об ошибке пользователю.
     Иначе она возвращает True и ответ"""
-    numbers = numbers.split(',')
     ok, numbers = await str_to_numbers(numbers, update)
     if not ok:
         return False, []
