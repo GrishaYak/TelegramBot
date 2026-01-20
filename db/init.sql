@@ -9,7 +9,8 @@ create table Categories(
     id serial unique,
     name varchar(32),
     user_id varchar(32),
-    primary key (name, user_id),
+    is_income boolean,
+    primary key (name, user_id, is_income),
     foreign key (user_id) references Users(tg_username) on delete cascade
 )
 

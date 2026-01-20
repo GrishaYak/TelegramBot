@@ -1,3 +1,5 @@
+from httpcore import request
+
 from .db_connection import get_connection
 
 # В этом файле содержатся все функции с запросами в базу данных
@@ -60,35 +62,52 @@ async def get_categories_by_username(username):
         await cursor.execute("SELECT (name) FROM categories WHERE user_id=%s", [username])
         return await cursor.fetchall()
 
-
-async def get_category_id(username, category_name):
-    """Возвращает id категории с данным названием, созданной данным пользователем"""
+async def get_categories_by_username_and_sign(username, sign):
+    """Возвращает все категории, созданные данным пользователям"""
     connection = await get_connection()
     async with connection.cursor() as cursor:
-        await cursor.execute("SELECT id FROM categories WHERE name=%s AND user_id=%s", [category_name, username])
+        await cursor.execute("SELECT (name) FROM categories WHERE user_id=%s AND is_income=%s", [username, sign])
+        return await cursor.fetchall()
+
+async def get_category_id(username, category_name, is_income=None):
+    """Возвращает id категории с данным названием, созданной данным пользователем"""
+    if is_income is None:
+        db_request = ("SELECT id FROM categories WHERE name=%s AND user_id=%s", [category_name, username])
+    else:
+        db_request = ("SELECT id FROM categories WHERE name=%s AND user_id=%s AND is_income=%s",
+                      [category_name, username, is_income])
+    connection = await get_connection()
+    async with connection.cursor() as cursor:
+        await cursor.execute(*db_request)
         category_id = await cursor.fetchone()
         if category_id is None or not category_id:
-            await add_category(category_name, username)
-        await cursor.execute("SELECT id FROM categories WHERE name=%s AND user_id=%s", [category_name, username])
+            await add_category(category_name, username, is_income)
+        await cursor.execute(*db_request)
         category_id = await cursor.fetchone()
     return category_id
 
 
-async def add_category(category_name, username):
+async def add_category(category_name, username, is_income):
     """Создаёт категорию с данным названием за данным пользователем"""
     connection = await get_connection()
     async with connection.cursor() as cursor:
-        await cursor.execute("INSERT INTO categories (name, user_id) VALUES (%s, %s)", [category_name, username])
+        await cursor.execute("INSERT INTO categories (name, user_id, is_income) VALUES (%s, %s, %s)", [category_name,
+                                                                                                username, is_income])
         await connection.commit()
 
 
 async def add_alteration(user_id, category_id, summa, description, date):
     """Добавляет изменение. На вход нужны:
-    никнейм пользователя;
-    id категории, к которой принадлежит изменение;
-    сумма, на которую сделано изменение;
-    описание изменения, может быть как строка, так и None;
-    дата совершения изменения."""
+
+    * никнейм пользователя;
+
+    * id категории, к которой принадлежит изменение;
+
+    * сумма, на которую сделано изменение;
+
+    * описание изменения, может быть как строка, так и None;
+
+    * дата совершения изменения."""
     connection = await get_connection()
     async with connection.cursor() as cursor:
         await cursor.execute(f"INSERT INTO alterations (user_id, category_id, summa, description, date) "

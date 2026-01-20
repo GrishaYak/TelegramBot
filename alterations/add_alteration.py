@@ -9,8 +9,8 @@ from db import db
 
 async def add_consumption(update, context):
     """Спрашивает сумму расхода, записывает что пользователь сохраняет именно расход, ведь далее диалог для записи и
-    расходов и доходов будут обрабатывать одни и те же функции. Также он сразу обозначает знак суммы, ведь в БД
-    разница между расходом и доходом заключается только в знаке суммы изменения."""
+    расходов и доходов будут обрабатывать одни и те же функции. Также он сразу обозначает знак изменения, ведь в БД
+    разница между расходом и доходом заключается только в знаке изменения."""
     await update.message.reply_text("Введите сумму расхода в рублях", reply_markup=get_markup(4))
     context.user_data['sign'] = -1
     context.user_data['type'] = 'расход'
@@ -19,8 +19,8 @@ async def add_consumption(update, context):
 
 async def add_income(update, context):
     """Спрашивает сумму дохода, записывает что пользователь сохраняет именно доход, ведь далее диалог для записи и
-    расходов и доходов будут обрабатывать одни и те же функции. Также он сразу обозначает знак суммы, ведь в БД
-    разница между расходом и доходом заключается только в знаке суммы изменения. """
+    расходов и доходов будут обрабатывать одни и те же функции. Также он сразу обозначает знак изменения, ведь в БД
+    разница между расходом и доходом заключается только в знаке изменения. """
     await update.message.reply_text("Введите сумму дохода в рублях", reply_markup=get_markup(4))
     context.user_data['sign'] = 1
     context.user_data['type'] = "доход"
@@ -28,7 +28,7 @@ async def add_income(update, context):
 
 
 async def process_sum(update, context):
-    """Проверяет корректность введёной суммы. Если сообщение с суммой некоректно, возвращает строку, отсылающую
+    """Проверяет корректность введённой суммы. Если сообщение с суммой некорректно, возвращает строку, отсылающую
     пользователя на шаг назад. Иначе, не возвращает ничего"""
     try:
         context.user_data['sum'] = int(update.message.text)
@@ -58,7 +58,7 @@ async def add_alteration_sum(update, context):
     context.user_data['sum'] *= context.user_data['sign']
     username = update.effective_user.username
 
-    keyboard = await db.get_categories_by_username(username)
+    keyboard = await db.get_categories_by_username_and_sign(username, context.user_data['sign']==1)
     keyboard = [el[0] for el in keyboard]
 
     markup = ReplyKeyboardMarkup(sep_by_three(keyboard) + [['/escape']])
@@ -71,7 +71,7 @@ async def add_alteration_sum(update, context):
 
 
 async def process_category(update):
-    """Проверяет корректность введёного названия категории"""
+    """Проверяет корректность введённого названия категории"""
     try:
         category_name = update.message.text
         if len(category_name) > 32:
@@ -92,9 +92,9 @@ async def add_alteration_category(update, context):
         return category_name
 
     category_name = category_name.replace("'", '`')  # Это нужно чтобы при записи категории в базу данных одинарная
-    # кавычка не закрылась, вызвав при этом ошибку, или создав уеязвимость в виде SQL-инъекции
+    # кавычка не закрылась, вызвав при этом ошибку, или создав уязвимость в виде SQL-инъекции
     username = update.effective_user.username
-    category_id = await db.get_category_id(username, category_name)
+    category_id = await db.get_category_id(username, category_name, context.user_data['sign']==1)
     context.user_data['category_id'] = category_id[0]
 
     await update.message.reply_text(f'Напишите краткое описание этого {context.user_data["type"]}а, или нажмите '
@@ -104,7 +104,7 @@ async def add_alteration_category(update, context):
 
 
 async def process_description(update):
-    """Проверяет корректность введёного описания"""
+    """Проверяет корректность введённого описания"""
     try:
         description = update.message.text
         if len(description) > 255:
@@ -128,7 +128,7 @@ async def add_alteration_description(update, context):
         description = None
     else:
         description = description.replace("'", "`") # Это нужно чтобы при записи категории в базу данных одинарная
-    # кавычка не закрылась, вызвав при этом ошибку, или создав уеязвимость в виде SQL-инъекции
+    # кавычка не закрылась, вызвав при этом ошибку, или создав уязвимость в виде SQL-инъекции
     row = [update.effective_user.username, context.user_data['category_id'], context.user_data['sum'], description,
            date.today()]
     await db.add_alteration(*row)

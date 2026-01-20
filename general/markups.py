@@ -2,7 +2,7 @@ from telegram import ReplyKeyboardMarkup
 from constants import EMPTY_DESCRIPTION, ALL_DATES
 from helpful_functions import sep_by_three
 
-# Этот файл используется лишь для упрощения создания подсказок пользователю.
+# Этот файл используется для упрощения создания подсказок пользователю.
 
 
 def get_markup(preset=1):
