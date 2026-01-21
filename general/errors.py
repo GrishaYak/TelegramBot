@@ -5,7 +5,7 @@ class TooBig(Exception):
     pass
 
 
-class IsNegative(Exception):
+class IsNotPositive(Exception):
     pass
 
 

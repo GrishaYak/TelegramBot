@@ -1,10 +1,11 @@
-from general.errors import TooBig, IsNegative, LenError
+from general.errors import TooBig, IsNotPositive, LenError
 from general.constants import EMPTY_DESCRIPTION
 from general.helpful_functions import sep_by_three
 from datetime import date
 from general.markups import get_markup
 from telegram import ReplyKeyboardMarkup
 from db import db
+from decimal import Decimal
 
 
 async def add_consumption(update, context):
@@ -31,15 +32,15 @@ async def process_sum(update, context):
     """Проверяет корректность введённой суммы. Если сообщение с суммой некорректно, возвращает строку, отсылающую
     пользователя на шаг назад. Иначе, не возвращает ничего"""
     try:
-        context.user_data['sum'] = int(update.message.text)
-        if context.user_data['sum'] >= (1 << 31):
+        context.user_data['sum'] = Decimal(update.message.text)
+        if context.user_data['sum'] >= 1e17:
             raise TooBig
         if context.user_data['sum'] <= 0:
-            raise IsNegative
+            raise IsNotPositive
     except TooBig:
         await update.message.reply_text("Пожалуйста, введите число поменьше!", reply_markup=get_markup(4))
         return 'add_alteration_sum'
-    except IsNegative:
+    except IsNotPositive:
         await update.message.reply_text("Пожалуйста, введите положительное число!", reply_markup=get_markup(4))
         return 'add_alteration_sum'
     except ValueError:
@@ -66,7 +67,7 @@ async def add_alteration_sum(update, context):
         await update.message.reply_text(f"Выберите категорию {context.user_data['type']}а. Вы можете нажать на одну из "
                                         f"тех, что вы уже создали, или просто написать новую", reply_markup=markup)
     else:
-        await update.message.reply_text(f"Выберете категорию {context.user_data['type']}а.", reply_markup=markup)
+        await update.message.reply_text(f"Выберете категорию {context.user_data['type']}а...", reply_markup=markup)
     return 'add_alteration_category'
 
 
@@ -74,6 +75,8 @@ async def process_category(update):
     """Проверяет корректность введённого названия категории"""
     try:
         category_name = update.message.text
+        category_name = category_name.replace("'", '`')  # Это нужно чтобы при записи категории в базу данных одинарная
+        # кавычка не закрылась, вызвав при этом ошибку, или создав уязвимость в виде SQL-инъекции
         if len(category_name) > 32:
             raise LenError
         return True, category_name
@@ -91,8 +94,6 @@ async def add_alteration_category(update, context):
     if not ok:
         return category_name
 
-    category_name = category_name.replace("'", '`')  # Это нужно чтобы при записи категории в базу данных одинарная
-    # кавычка не закрылась, вызвав при этом ошибку, или создав уязвимость в виде SQL-инъекции
     username = update.effective_user.username
     category_id = await db.get_category_id(username, category_name, context.user_data['sign']==1)
     context.user_data['category_id'] = category_id[0]

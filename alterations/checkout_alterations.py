@@ -1,6 +1,7 @@
 from general.constants import CHECKOUT_TEXT, CHECKOUT_ALTERATION, CHECKOUT_ALTERATION_WOUT_DESCRIPTION, ALL_DATES
 from general.markups import get_markup
 from general.errors import TooManyWords
+from decimal import Decimal
 import datetime
 from db import db
 
@@ -53,7 +54,7 @@ async def checkout_alteration(update, context):
 
     await update.message.reply_text(text)
     if text == NO_ALTERATIONS_FOUND:
-        await update.message.reply_text("Вы можете выбрать новый промежуток времени", reply_markup=get_markup(5))
+        await update.message.reply_text("Вы можете выбрать новый промежуток времени, или выйти...", reply_markup=get_markup(5))
     else:
         await update.message.reply_text("Вы можете ввести даты снова, или удалить какие-то из записей.",
                                         reply_markup=get_markup(6))
@@ -74,16 +75,20 @@ def add_alterations_to_user_data(alterations, context):
 
 async def rows_to_text(update, alterations):
     """Переводит изменения, записанные в двумерный массив в текс, который будет отправлен пользователю.
+
     В массиве alterations нужно хранить следующие данные в следующем порядке:
-    сумма изменения;
-    id категории изменения;
-    описание изменения;
-    дата изменения.
-    """
+     * сумма изменения;
+
+     * id категории изменения;
+
+     * описание изменения;
+
+     * дата изменения."""
     text = ''
     for i in range(len(alterations)):
         alt = list(alterations[i])
-        alt[0] = int(alt[0])
+        print(alt[0])
+        alt[0] = Decimal(alt[0])
         if alt[0] < 0:
             alt[0] *= -1
             typ = "расход"
@@ -115,7 +120,8 @@ async def show_all_alterations(update, context):
     text = await rows_to_text(update, res)
     await update.message.reply_text(text)
     if text == NO_ALTERATIONS_FOUND:
-        await update.message.reply_text("Вы можете выбрать новый промежуток времени", reply_markup=get_markup(5))
+        await update.message.reply_text("Вы можете выбрать новый промежуток времени, или выйти...",
+                                        reply_markup=get_markup(5))
     else:
         await update.message.reply_text("Вы можете ввести даты снова, или удалить какие-то из записей.",
                                         reply_markup=get_markup(6))

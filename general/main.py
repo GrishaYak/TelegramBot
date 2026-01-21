@@ -14,7 +14,7 @@ def main():
         entry_points=[start_handler],
         states={
             1: [add_consumption_handler, add_income_handler, checkout_alteration_handler,
-                delete_user_are_you_shure_handler, checkout_categories_handler],
+                delete_user_are_you_sure_handler, checkout_categories_handler],
             'add_alteration_sum': [add_alteration_sum_handler],
             'add_alteration_category': [add_alteration_category_handler],
             'add_alteration_description': [add_alteration_description_handler],

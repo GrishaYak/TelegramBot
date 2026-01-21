@@ -1,5 +1,5 @@
 from alterations.delete_alterations import delete_alteration, delete_alteration2
-from alterations.checkout_alteration import checkout_alteration_question, checkout_alteration
+from alterations.checkout_alterations import checkout_alteration_question, checkout_alteration
 from delete_user import delete_user_question, delete_user
 from categories.checkout_categories import checkout_categories
 from categories.delete_categories import delete_categories_which, delete_categories
@@ -17,7 +17,7 @@ escape_handler = CommandHandler("escape", escape)
 checkout_alteration_handler = CommandHandler("checkout_alterations", checkout_alteration_question)
 checkout_alteration_handler2 = MessageHandler(filters.TEXT & ~filters.COMMAND, checkout_alteration)
 
-delete_user_are_you_shure_handler = CommandHandler("delete_me", delete_user_question)
+delete_user_are_you_sure_handler = CommandHandler("delete_me", delete_user_question)
 delete_user_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, delete_user)
 
 add_consumption_handler = CommandHandler("add_consumption", add_consumption)

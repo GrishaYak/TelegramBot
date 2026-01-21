@@ -18,7 +18,7 @@ create table Alterations(
     id serial primary key,
     user_id varchar(32) not null,
     category_id int not null,
-    summa int not null,
+    summa NUMERIC(18,2) not null,
     description varchar(255),
     date date not null,
     foreign key (user_id) references Users(tg_username) on delete cascade,
