@@ -1,5 +1,5 @@
-from general.constants import ARE_YOU_SURE, KEY_WORD, ARE_NOT_SURE
-from general.markups import get_markup
+from constants import ARE_YOU_SURE, KEY_WORD, ARE_NOT_SURE
+from markups import get_markup
 from db import db
 
 

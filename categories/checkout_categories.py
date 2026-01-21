@@ -1,5 +1,5 @@
 from db import db
-from general.markups import get_markup
+from markups import get_markup
 
 
 async def checkout_categories(update, context):

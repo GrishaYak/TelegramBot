@@ -1,8 +1,8 @@
-from general.errors import TooBig, IsNotPositive, LenError
-from general.constants import EMPTY_DESCRIPTION
-from general.helpful_functions import sep_by_three
+from errors import TooBig, IsNotPositive, LenError
+from constants import EMPTY_DESCRIPTION
+from helpful_functions import sep_by_three
 from datetime import date
-from general.markups import get_markup
+from markups import get_markup
 from telegram import ReplyKeyboardMarkup
 from db import db
 from decimal import Decimal

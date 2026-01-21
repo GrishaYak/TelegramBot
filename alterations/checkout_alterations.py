@@ -1,6 +1,6 @@
-from general.constants import CHECKOUT_TEXT, CHECKOUT_ALTERATION, CHECKOUT_ALTERATION_WOUT_DESCRIPTION, ALL_DATES
-from general.markups import get_markup
-from general.errors import TooManyWords
+from constants import CHECKOUT_TEXT, CHECKOUT_ALTERATION, CHECKOUT_ALTERATION_WOUT_DESCRIPTION, ALL_DATES
+from markups import get_markup
+from errors import TooManyWords
 from decimal import Decimal
 import datetime
 from db import db
