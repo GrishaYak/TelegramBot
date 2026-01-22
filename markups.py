@@ -23,7 +23,7 @@ def get_markup(preset=1):
             keyboard = [[ALL_DATES],
                         ['/escape']]
         case 6:
-            keyboard = [['/delete', ALL_DATES],
+            keyboard = [['/delete_alterations', ALL_DATES],
                         ['/escape']]
         case 7:
             keyboard = [['/delete_categories'],

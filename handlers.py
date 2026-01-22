@@ -27,7 +27,7 @@ add_alteration_sum_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, add
 add_alteration_category_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, add_alteration_category)
 add_alteration_description_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, add_alteration_description)
 
-delete_alterations_which_handler = CommandHandler("delete", delete_alteration)
+delete_alterations_which_handler = CommandHandler("delete_alterations", delete_alteration)
 delete_alterations_handler = MessageHandler(filters.TEXT & ~filters.COMMAND, delete_alteration2)
 
 checkout_categories_handler = CommandHandler('checkout_categories', checkout_categories)
