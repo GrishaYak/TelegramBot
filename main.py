@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 import asyncio
 from handlers import *
 
+load_dotenv()
+SERVER_URL = os.getenv("SERVER_URL")
+WEBHOOK_URL = SERVER_URL + "/webhook"
 
 def main():
     """Это главная функция, она включает бота и добавляет ему обработчики сообщений, взятые из файла handlers"""
@@ -30,13 +33,17 @@ def main():
 
     application.add_handler(help_handler)
     application.add_handler(start_conv)
-    application.run_polling()
-
+    application.run_webhook(
+        listen="0.0.0.0",
+        port=80,
+        webhook_url=WEBHOOK_URL,
+        url_path="webhook"
+    )
 
 if __name__ == '__main__':
-    load_dotenv()  # Загружаем окружение.
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
     logger = logging.getLogger(__name__)
     if os.name == 'nt':
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     main()
+
